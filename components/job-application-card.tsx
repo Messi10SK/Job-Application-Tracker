@@ -1,6 +1,6 @@
 "use client";
 
-import { JobApplication, Column } from "@/lib/models/models.types";
+import  { JobApplication, Column } from "@/lib/models/models.types";
 import { Card, CardContent } from "./ui/card";
 import { Edit2, ExternalLink, MoreVertical, Plus, Trash2 } from "lucide-react";
 import {
