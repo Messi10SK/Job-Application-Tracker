@@ -7,41 +7,44 @@ import { initializeUserBoard } from "../init-user-board";
 
 export const runtime = "nodejs";
 
-// ✅ Resolve client once and derive Db
-const client = await clientPromise;
-const db = client.db();
+async function createAuth() {
+  const client = await clientPromise; // ✅ runtime only
+  const db = client.db();
 
-const auth = betterAuth({
-  database: mongodbAdapter(db), // ✅ CORRECT
-  session: {
-    cookieCache: {
-      enabled: true,
-      maxAge: 60 * 60,
+  return betterAuth({
+    database: mongodbAdapter(db),
+    session: {
+      cookieCache: {
+        enabled: true,
+        maxAge: 60 * 60,
+      },
     },
-  },
-  emailAndPassword: {
-    enabled: true,
-  },
-  databaseHooks: {
-    user: {
-      create: {
-        after: async (user) => {
-          if (user.id) {
-            await initializeUserBoard(user.id);
-          }
+    emailAndPassword: {
+      enabled: true,
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            if (user.id) {
+              await initializeUserBoard(user.id);
+            }
+          },
         },
       },
     },
-  },
-});
+  });
+}
 
 export async function getSession() {
+  const auth = await createAuth();
   return auth.api.getSession({
     headers: await headers(),
   });
 }
 
 export async function signOut() {
+  const auth = await createAuth();
   const result = await auth.api.signOut({
     headers: await headers(),
   });
@@ -51,4 +54,6 @@ export async function signOut() {
   }
 }
 
-export { auth };
+export async function getAuth() {
+  return createAuth();
+}
